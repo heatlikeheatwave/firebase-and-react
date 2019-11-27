@@ -1,26 +1,50 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { Component } from 'react';
 import './App.css';
+import firebase from './firebase.js';
+import Book from './Book';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends Component {
+  constructor() {
+    super();
+    this.state = {
+      books: []
+    }
+  }
+  
+  componentDidMount() {
+    const dbRef = firebase.database().ref();
+    
+    dbRef.on('value', snapshot => {
+      const database = snapshot.val();
+      const bookTitles = Object.values(database);
+      
+      this.setState({
+        books: bookTitles
+      })
+    })
+  }
+
+  handleChange = (e) => {
+    console.log(e.target.value);
+  }
+  
+  render() {
+    return (
+      <div className="App">
+          <h1><span role="img" aria-hidden="true">🌧</span> Rainy Day Bookshelf <span role="img" aria-hidden="true">📖</span></h1>
+          <ul>
+            {this.state.books.map((book, index) => {
+              console.log(book, index);
+              return <Book title={book} key={index}></Book>
+            })}
+          </ul>
+          <form>
+                <input id="bookTitle" type="text" onChange={this.handleChange} />
+                <button type="submit">Add to List</button>
+            </form>
+      </div>
+    );
+  }
 }
 
 export default App;

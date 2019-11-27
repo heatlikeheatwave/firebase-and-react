@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import dbRef from './firebase.js';
-import Book from './Book';
+
 
 class App extends Component {
   constructor() {
@@ -15,13 +15,23 @@ class App extends Component {
   
   componentDidMount() {
     dbRef.on('value', snapshot => {
-      const database = snapshot.val();
-      const bookTitles = Object.values(database);
+      const books = snapshot.val();
+      const newBooks = [];
       
+      for (let key in books){
+        const eachBookObject = {
+          id: key,
+          title: books[key]
+        }
+
+        newBooks.push(eachBookObject);
+      }
+
       this.setState({
-        books: bookTitles
+        books: newBooks
       })
     })
+
   }
 
   handleChange = (e) => {
@@ -35,7 +45,16 @@ class App extends Component {
 
     const bookToAdd = this.state.userInput;
     
-    dbRef.push(bookToAdd)
+    if (bookToAdd !== '') {
+      dbRef.push(bookToAdd)
+      this.setState({
+        userInput: ''
+      })
+    }
+  }
+
+  byebyeBookie = (event) => {
+    dbRef.child(event.target.id).remove();
   }
   
   render() {
@@ -44,7 +63,9 @@ class App extends Component {
           <h1><span role="img" aria-hidden="true">🌧</span> Rainy Day Bookshelf <span role="img" aria-hidden="true">📖</span></h1>
           <ul>
             {this.state.books.map((book, index) => {
-              return <Book title={book} key={index}></Book>
+              return(
+                <li key={index}>{book.title}<span className="delete" id={book.id} onClick={this.byebyeBookie}>x</span></li>
+              )
             })}
           </ul>
           <form onSubmit={this.handleSubmit}>

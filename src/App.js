@@ -1,19 +1,19 @@
 import React, { Component } from 'react';
 import './App.css';
-import firebase from './firebase.js';
+import dbRef from './firebase.js';
 import Book from './Book';
 
 class App extends Component {
   constructor() {
     super();
     this.state = {
-      books: []
+      books: [],
+      userInput: '',
+      newBook: '',
     }
   }
   
   componentDidMount() {
-    const dbRef = firebase.database().ref();
-    
     dbRef.on('value', snapshot => {
       const database = snapshot.val();
       const bookTitles = Object.values(database);
@@ -25,7 +25,17 @@ class App extends Component {
   }
 
   handleChange = (e) => {
-    console.log(e.target.value);
+    this.setState({
+      userInput: e.target.value
+    })
+  }
+
+  handleSubmit = (e) => {
+    e.preventDefault();
+
+    const bookToAdd = this.state.userInput;
+    
+    dbRef.push(bookToAdd)
   }
   
   render() {
@@ -34,13 +44,13 @@ class App extends Component {
           <h1><span role="img" aria-hidden="true">🌧</span> Rainy Day Bookshelf <span role="img" aria-hidden="true">📖</span></h1>
           <ul>
             {this.state.books.map((book, index) => {
-              console.log(book, index);
               return <Book title={book} key={index}></Book>
             })}
           </ul>
-          <form>
-                <input id="bookTitle" type="text" onChange={this.handleChange} />
-                <button type="submit">Add to List</button>
+          <form onSubmit={this.handleSubmit}>
+              <label htmlFor="bookTitle">What book are you adding to your bookshelf?</label>
+              <input value={this.state.userInput} id="bookTitle" type="text" onChange={this.handleChange} />
+              <button type="submit" >Add to List</button>
             </form>
       </div>
     );
